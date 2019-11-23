@@ -65,12 +65,35 @@ class GuzzleRbcArticleList implements ArticleListInterface
      */
     public function __construct($base_url = 'https://www.rbc.ru', $limit = 15, $route = 'all')
     {
-        $this->base_url = $base_url;
-        $this->limit = $limit;
-        $this->route = $route;
+        $this->setBaseUrl($base_url);
+        $this->setLimit($limit);
+        $this->setRoute($route);
         $this->client = $this->createGuzzleClient($base_url);
-        $this->fetchList();
-        $this->prepareList();
+    }
+
+    public function setBaseUrl(string $base_url)
+    {
+        $this->base_url = $base_url;
+    }
+
+    public function setLimit($limit)
+    {
+        $this->limit = $limit;
+    }
+
+    public function getLimit()
+    {
+        return $this->limit;
+    }
+
+    public function setRoute($route)
+    {
+        $this->route = $route;
+    }
+
+    public function getRoute()
+    {
+        return $this->route;
     }
 
     /**
@@ -109,6 +132,8 @@ class GuzzleRbcArticleList implements ArticleListInterface
      */
     public function getArticleList()
     {
+        $this->fetchList();
+        $this->prepareList();
         $count_article = 0;
         $articles = [];
         foreach ($this->article_pages_list as $href => $content) {
