@@ -13,11 +13,15 @@ interface NodeConfigInterface
 {
 
     /**
+     * Имя ноды
+     *
      * @return string|int
      */
     public function getName();
 
     /**
+     * Путь до ноды
+     *
      * @return string
      */
     public function getRoute(): string;

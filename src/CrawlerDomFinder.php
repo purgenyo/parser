@@ -12,6 +12,11 @@ class CrawlerDomFinder extends HtmlFinder
         $this->setFinderComponent($this->createComponent());
     }
 
+    /**
+     * Создание компонента
+     *
+     * @return CrawlerAdapter
+     */
     private function createComponent()
     {
         $component = new CrawlerAdapter;

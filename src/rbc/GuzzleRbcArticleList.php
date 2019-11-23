@@ -47,35 +47,38 @@ class GuzzleRbcArticleList implements ArticleListInterface
      *
      * @var array
      */
-    public $article_pages_list = [];
+    private $article_pages_list = [];
 
     /**
      * Список адресов публикаций
      *
      * @var array
      */
-    public $url_list = [];
+    private $url_list = [];
 
     /**
      * GuzzleRbcArticleList constructor.
+     *
      * @param string $base_url
      * @param int $limit
      * @param string $route
      */
-    public function __construct($base_url = 'https://www.rbc.ru', $limit = 30, $route = 'all')
+    public function __construct($base_url = 'https://www.rbc.ru', $limit = 15, $route = 'all')
     {
         $this->base_url = $base_url;
         $this->limit = $limit;
         $this->route = $route;
         $this->client = $this->createGuzzleClient($base_url);
+        $this->fetchList();
+        $this->prepareList();
     }
 
     /**
-     * Подгружает список новостей в виде адресов на них
+     * Подгружает список публикаций в виде адресов на них
      *
      * @return array
      */
-    public function fetchList()
+    private function fetchList()
     {
         $list = [];
         $json_items = $this->processJsonList($this->getBody($this->getArticleListUrl()));
@@ -86,14 +89,14 @@ class GuzzleRbcArticleList implements ArticleListInterface
                 $list[] = $href;
             }
         }
-        $this->url_list = array_filter($list);
+        $this->url_list = $list;
         return $this->url_list;
     }
 
     /**
      * Получает контент страниц по их адресам
      */
-    public function prepareList()
+    private function prepareList()
     {
         foreach ($this->url_list as $url) {
             $this->article_pages_list[$url] = $this->getBody($url);
@@ -101,6 +104,9 @@ class GuzzleRbcArticleList implements ArticleListInterface
         $this->article_pages_list = array_filter($this->article_pages_list);
     }
 
+    /**
+     * @return array|ArticleItem[]
+     */
     public function getArticleList()
     {
         $count_article = 0;
@@ -115,17 +121,21 @@ class GuzzleRbcArticleList implements ArticleListInterface
                 $count_article++;
             }
         }
-
         return $articles;
     }
 
-    public function getArticleListUrl()
+    /**
+     * Формирует путь до анонса публикаций на главной странице
+     *
+     * @return string
+     */
+    private function getArticleListUrl()
     {
         $current_timestamp = strtotime('now UTC');
         return "/v10/ajax/get-news-feed/project/rbcnews.{$this->route}/lastDate/{$current_timestamp}/limit/{$this->limit}";
     }
 
-    public function getArticle($content): ?ArticleItem
+    private function getArticle($content): ?ArticleItem
     {
         $strategy_finder = $this->getStrategyFinder();
         if ($article = $strategy_finder->findStrategy($content)) {
@@ -134,12 +144,21 @@ class GuzzleRbcArticleList implements ArticleListInterface
         return null;
     }
 
-    public function getStrategyFinder(): ArticleStrategy
+    /**
+     * @return ArticleStrategy
+     */
+    protected function getStrategyFinder(): ArticleStrategy
     {
         return new ArticleStrategyFinder([new RbcArticle]);
     }
 
-    public function processJsonList($content_list)
+    /**
+     * Обработка json контента
+     *
+     * @param $content_list
+     * @return array
+     */
+    private function processJsonList($content_list)
     {
         $json_list = [];
         $json = json_decode($content_list, true);
@@ -149,7 +168,13 @@ class GuzzleRbcArticleList implements ArticleListInterface
         return array_filter($json_list);
     }
 
-    public function getBody($url)
+    /**
+     * Возвращает контент по заданому адресу
+     *
+     * @param $url
+     * @return string
+     */
+    protected function getBody($url)
     {
         try {
             return $this->getClient()->request('GET', $url)->getBody()->getContents();
@@ -158,12 +183,19 @@ class GuzzleRbcArticleList implements ArticleListInterface
         }
     }
 
-    public function getClient(): ClientInterface
+    /**
+     * @return ClientInterface
+     */
+    protected function getClient(): ClientInterface
     {
         return $this->client;
     }
 
-    public function createGuzzleClient($baseUrl): ClientInterface
+    /**
+     * @param $baseUrl
+     * @return ClientInterface
+     */
+    protected function createGuzzleClient($baseUrl): ClientInterface
     {
         return new Client(['base_uri' => $baseUrl]);
     }

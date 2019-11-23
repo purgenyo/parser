@@ -35,7 +35,7 @@ interface HtmlFinderInterface
     /**
      * Возвращает список нод
      *
-     * @return array
+     * @return NodeConfigInterface[]
      */
     public function getNodes();
 

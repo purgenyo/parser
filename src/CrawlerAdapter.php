@@ -16,9 +16,12 @@ class CrawlerAdapter implements HtmlFinderComponentInterface
 
     private $content;
 
+    private $parser;
+
     public function setContent($content)
     {
         $this->content = $content;
+        $this->createParser();
     }
 
     public function getContent()
@@ -38,9 +41,19 @@ class CrawlerAdapter implements HtmlFinderComponentInterface
         return $nodes;
     }
 
+    /**
+     * Создание экземпляра crawler
+     *
+     * @return Crawler
+     */
     public function getParser(): Crawler
     {
-        return new Crawler($this->getContent());
+        return $this->parser;
+    }
+
+    private function createParser()
+    {
+        $this->parser = new Crawler($this->getContent());
     }
 
     public function findFirst(NodeConfigInterface $node)
