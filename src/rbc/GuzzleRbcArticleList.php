@@ -68,12 +68,17 @@ class GuzzleRbcArticleList implements ArticleListInterface
         $this->setBaseUrl($base_url);
         $this->setLimit($limit);
         $this->setRoute($route);
-        $this->client = $this->createGuzzleClient($base_url);
+        $this->client = $this->createGuzzleClient($this->getBaseUrl());
     }
 
     public function setBaseUrl(string $base_url)
     {
         $this->base_url = $base_url;
+    }
+
+    public function getBaseUrl()
+    {
+        return $this->base_url;
     }
 
     public function setLimit($limit)
@@ -137,7 +142,7 @@ class GuzzleRbcArticleList implements ArticleListInterface
         $count_article = 0;
         $articles = [];
         foreach ($this->article_pages_list as $href => $content) {
-            if ($count_article == $this->limit) {
+            if ($count_article == $this->getLimit()) {
                 break;
             }
             if ($article = $this->getArticle($content)) {
@@ -157,7 +162,7 @@ class GuzzleRbcArticleList implements ArticleListInterface
     private function getArticleListUrl()
     {
         $current_timestamp = strtotime('now UTC');
-        return "/v10/ajax/get-news-feed/project/rbcnews.{$this->route}/lastDate/{$current_timestamp}/limit/{$this->limit}";
+        return "/v10/ajax/get-news-feed/project/rbcnews.{$this->getRoute()}/lastDate/{$current_timestamp}/limit/{$this->getLimit()}";
     }
 
     private function getArticle($content): ?ArticleItem
