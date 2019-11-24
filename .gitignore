@@ -3,4 +3,4 @@
 composer.lock
 /index.php
 composer.phar
-.idea/
+/.idea
